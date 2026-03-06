@@ -1,0 +1,9 @@
+{
+  "name": "FLB Forum Home Cards",
+  "about_url": "https://forum.worldofairports.com",
+  "license_url": "https://opensource.org/licenses/MIT",
+  "authors": "forum.worldofairports.com",
+  "component": true,
+  "version": "0.1.0",
+  "description": "Homepage cards for game categories and subcategories."
+}
