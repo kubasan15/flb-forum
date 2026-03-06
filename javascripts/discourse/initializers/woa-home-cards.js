@@ -3,8 +3,8 @@ import { ajax } from "discourse/lib/ajax";
 
 export default apiInitializer("0.11.1", (api) => {
   const DEFAULT_ROTATE_INTERVAL = 6500;
-  const DEFAULT_TICK_TIMEOUT = 60;
-  const DEFAULT_JUMP_ITERATIONS = 4;
+  const DEFAULT_TICK_TIMEOUT = 20;
+  const DEFAULT_JUMP_ITERATIONS = 1;
   let splitflapStops = [];
 
   const stopSplitflaps = () => {
@@ -12,16 +12,18 @@ export default apiInitializer("0.11.1", (api) => {
     splitflapStops = [];
   };
 
-  const renderSplitflapText = (container, text) => {
+  const renderSplitflapText = (container, text, lengthOverride) => {
     const normalized = (text || "").toUpperCase();
+    const length = typeof lengthOverride === "number" ? lengthOverride : normalized.length;
+    const padded = normalized.padEnd(length, " ");
     container.innerHTML = "";
-    Array.from(normalized).forEach((char) => {
+    Array.from(padded).forEach((char) => {
       const cell = document.createElement("span");
       cell.className = "woa-splitflap__cell";
       cell.textContent = char || " ";
       container.appendChild(cell);
     });
-    container.setAttribute("data-current", normalized);
+    container.setAttribute("data-current", padded);
   };
 
   const startSplitflap = (container, texts, options = {}, onChange) => {
@@ -31,6 +33,8 @@ export default apiInitializer("0.11.1", (api) => {
     if (!normalizedTexts.length) {
       return () => {};
     }
+
+    const maxLength = normalizedTexts.reduce((max, text) => Math.max(max, text.length), 0);
 
     const timeOut = Number(options.timeOut ?? DEFAULT_ROTATE_INTERVAL);
     const tickTimeOut = Number(options.tickTimeOut ?? DEFAULT_TICK_TIMEOUT);
@@ -47,7 +51,7 @@ export default apiInitializer("0.11.1", (api) => {
     };
 
     const updateDisplay = (text) => {
-      renderSplitflapText(container, text);
+      renderSplitflapText(container, text, maxLength);
       curText = text;
     };
 
@@ -68,7 +72,6 @@ export default apiInitializer("0.11.1", (api) => {
       if (stopped) {
         return;
       }
-      const maxLength = Math.max(curText.length, targetText.length);
       const current = curText.padEnd(maxLength, " ").split("");
       const target = targetText.padEnd(maxLength, " ");
       let done = true;
