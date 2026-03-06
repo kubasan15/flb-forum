@@ -81,16 +81,27 @@ export default apiInitializer("0.11.1", (api) => {
       steps.forEach((stepChar, stepIndex) => {
         const delay = index * 28 + stepIndex * FLIP_DURATION;
         window.setTimeout(() => {
+          const currentChar = charEl.getAttribute("data-current") || " ";
+          const top = charEl.querySelector(".woa-splitflap__top");
+          const bottom = charEl.querySelector(".woa-splitflap__bottom");
           const flip = charEl.querySelector(".woa-splitflap__flip");
-          if (flip) {
-            flip.textContent = charEl.getAttribute("data-current") || " ";
+          if (top) {
+            top.textContent = currentChar;
           }
+          if (bottom) {
+            bottom.textContent = stepChar;
+          }
+          if (flip) {
+            flip.textContent = currentChar;
+          }
+
           charEl.classList.remove("is-flipping");
           void charEl.offsetHeight;
           charEl.classList.add("is-flipping");
+
           window.setTimeout(() => {
             setSplitflapChar(charEl, stepChar);
-          }, FLIP_DURATION * 0.5);
+          }, FLIP_DURATION * 0.55);
         }, delay);
       });
     });
