@@ -1,19 +1,84 @@
 <section id="woa-home-games" class="woa-home-games">
   <div class="woa-home-games__inner">
-    <a class="woa-game-card" href="/c/world-of-airports/121">
-      <div class="woa-game-card__media" style="background-image:url('https://your-cdn.com/woa.jpg')"></div>
+    <article class="woa-game-card" data-woa-card data-href="/c/world-of-airports/121">
+      <div class="woa-game-card__media" style="background-image:url('https://flyboys.games/images/woa/main.webp')"></div>
       <div class="woa-game-card__body">
         <h3 class="woa-game-card__title">World of Airports</h3>
-        <p class="woa-game-card__text">Oficialni forum pro hrace, novinky, bugy a navody.</p>
+        <p class="woa-game-card__text">A strategy airport management game with realistic 3D airports and true-to-life operations.</p>
+        <div class="woa-game-card__stores">
+          <a class="woa-store-button" href="https://play.google.com/store/apps/details?id=com.haugland.woa" target="_blank" rel="noopener">Google Play</a>
+          <a class="woa-store-button" href="https://apps.apple.com/app/world-of-airports/id1462642534" target="_blank" rel="noopener">App Store</a>
+        </div>
       </div>
-    </a>
+    </article>
 
-    <a class="woa-game-card" href="/c/your-second-game/23">
-      <div class="woa-game-card__media" style="background-image:url('https://your-cdn.com/game2.jpg')"></div>
+    <article class="woa-game-card" data-woa-card data-href="#">
+      <div class="woa-game-card__media" style="background-image:url('https://flyboys.games/images/airportprg/main.webp')"></div>
       <div class="woa-game-card__body">
-        <h3 class="woa-game-card__title">Druha hra</h3>
-        <p class="woa-game-card__text">Kratky popis pro komunitu a podporu.</p>
+        <h3 class="woa-game-card__title">AirportPRG</h3>
+        <p class="woa-game-card__text">Control air traffic and grow Prague Ruzyne from grassy runways to a modern hub.</p>
+        <div class="woa-game-card__stores">
+          <a class="woa-store-button" href="https://play.google.com/store/apps/details?id=com.HaugLand.AirportPRG" target="_blank" rel="noopener">Google Play</a>
+          <a class="woa-store-button" href="https://apps.apple.com/app/airportprg/id1285078879" target="_blank" rel="noopener">App Store</a>
+        </div>
       </div>
-    </a>
+    </article>
+
+    <article class="woa-game-card" data-woa-card data-href="#">
+      <div class="woa-game-card__media" style="background-image:url('https://flyboys.games/images/flyboys/main.webp')"></div>
+      <div class="woa-game-card__body">
+        <h3 class="woa-game-card__title">Flyboys</h3>
+        <p class="woa-game-card__text">Become a Flyboy in a challenging arcade adventure about determination and flight.</p>
+        <div class="woa-game-card__stores">
+          <a class="woa-store-button" href="https://play.google.com/store/apps/details?id=com.FlyboysGames.Flyboys" target="_blank" rel="noopener">Google Play</a>
+          <a class="woa-store-button" href="https://apps.apple.com/app/flyboys/id1616669569" target="_blank" rel="noopener">App Store</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="woa-game-card" data-woa-card data-href="#">
+      <div class="woa-game-card__media" style="background-image:url('https://flyboys.games/images/scrapit/main.webp')"></div>
+      <div class="woa-game-card__body">
+        <h3 class="woa-game-card__title">Scrap It</h3>
+        <p class="woa-game-card__text">A fast-paced logic puzzle where you move planes on a grid to scrap them.</p>
+        <div class="woa-game-card__stores">
+          <a class="woa-store-button" href="https://play.google.com/store/apps/details?id=com.FlyboysGames.ScrapIT" target="_blank" rel="noopener">Google Play</a>
+          <a class="woa-store-button" href="https://apps.apple.com/app/id6520392271" target="_blank" rel="noopener">App Store</a>
+        </div>
+      </div>
+    </article>
   </div>
 </section>
+
+<script>
+  (function () {
+    var cards = document.querySelectorAll("[data-woa-card]");
+    cards.forEach(function (card) {
+      card.setAttribute("tabindex", "0");
+      card.setAttribute("role", "link");
+
+      card.addEventListener("click", function (event) {
+        if (event.target.closest("a")) {
+          return;
+        }
+        var href = card.getAttribute("data-href");
+        if (href && href !== "#") {
+          window.location.href = href;
+        }
+      });
+
+      card.addEventListener("keydown", function (event) {
+        if (event.target.closest("a")) {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          var href = card.getAttribute("data-href");
+          if (href && href !== "#") {
+            window.location.href = href;
+          }
+        }
+      });
+    });
+  })();
+</script>
