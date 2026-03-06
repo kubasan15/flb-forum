@@ -56,8 +56,8 @@ body:not(.navigation-categories) #woa-home-announcements {
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 8px 12px;
   border-radius: 10px;
   border: 1px solid #2f3241;
   background: #1d1f2a;
@@ -112,6 +112,10 @@ body:not(.navigation-categories) #woa-home-announcements {
   overflow: hidden;
   padding: 2px 0;
   text-align: left;
+}
+
+.woa-home-announcement__line--meta {
+  display: none;
 }
 
 .woa-home-announcement__line::before {
