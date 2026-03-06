@@ -27,6 +27,32 @@ export default apiInitializer("0.11.1", (api) => {
     container.setAttribute("data-current", padded);
   };
 
+  const parseCssSizeToPx = (value) => {
+    if (!value) {
+      return 0;
+    }
+    const trimmed = value.trim();
+    if (trimmed.endsWith("px")) {
+      return Number.parseFloat(trimmed) || 0;
+    }
+    if (trimmed.endsWith("rem")) {
+      const rootSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+      return (Number.parseFloat(trimmed) || 0) * rootSize;
+    }
+    return Number.parseFloat(trimmed) || 0;
+  };
+
+  const getSplitflapCellCount = (container) => {
+    const styles = window.getComputedStyle(container);
+    const cellWidth = parseCssSizeToPx(styles.getPropertyValue("--cell-width")) || 16;
+    const gap = parseCssSizeToPx(styles.columnGap || styles.gap) || 2;
+    const width = container.getBoundingClientRect().width;
+    if (!width) {
+      return 0;
+    }
+    return Math.max(1, Math.floor((width + gap) / (cellWidth + gap)));
+  };
+
   const startSplitflap = (container, texts, options = {}, onChange) => {
     const normalizedTexts = (texts || [])
       .map((text) => (text || "").toUpperCase())
@@ -34,8 +60,10 @@ export default apiInitializer("0.11.1", (api) => {
     if (!normalizedTexts.length) {
       return () => {};
     }
-
-    const maxLength = normalizedTexts.reduce((max, text) => Math.max(max, text.length), 0);
+    const maxLength = Math.max(
+      normalizedTexts.reduce((max, text) => Math.max(max, text.length), 0),
+      Number(options.cellCount || 0)
+    );
 
     const timeOut = Number(options.timeOut ?? DEFAULT_ROTATE_INTERVAL);
     const tickTimeOut = Number(options.tickTimeOut ?? DEFAULT_TICK_TIMEOUT);
@@ -78,7 +106,14 @@ export default apiInitializer("0.11.1", (api) => {
       let done = true;
 
       for (let i = 0; i < maxLength; i += 1) {
-        if (current[i] !== target[i]) {
+        const targetChar = target[i];
+        const targetCode = targetChar ? targetChar.charCodeAt(0) : 32;
+        if (targetCode < 32 || targetCode > 126) {
+          current[i] = targetChar;
+          continue;
+        }
+
+        if (current[i] !== targetChar) {
           done = false;
           let code = current[i].charCodeAt(0);
           if (Number.isNaN(code) || code < 32 || code > 126) {
@@ -169,6 +204,8 @@ export default apiInitializer("0.11.1", (api) => {
       link.appendChild(metaLine);
       list.appendChild(link);
 
+      const cellCount = getSplitflapCellCount(title) || getSplitflapCellCount(meta);
+
       const getTopicUrl = (topic) => {
         const fallbackUrl =
           topic?.slug && topic?.id ? `/t/${topic.slug}/${topic.id}` : topic?.id ? `/t/${topic.id}` : null;
@@ -199,7 +236,12 @@ export default apiInitializer("0.11.1", (api) => {
         startSplitflap(
           title,
           titleTexts,
-          { timeOut: rotateInterval, tickTimeOut: DEFAULT_TICK_TIMEOUT, nbJumpIterations: DEFAULT_JUMP_ITERATIONS },
+          {
+            timeOut: rotateInterval,
+            tickTimeOut: DEFAULT_TICK_TIMEOUT,
+            nbJumpIterations: DEFAULT_JUMP_ITERATIONS,
+            cellCount,
+          },
           updateLink
         )
       );
@@ -209,6 +251,7 @@ export default apiInitializer("0.11.1", (api) => {
           timeOut: rotateInterval,
           tickTimeOut: DEFAULT_TICK_TIMEOUT,
           nbJumpIterations: DEFAULT_JUMP_ITERATIONS,
+          cellCount,
         })
       );
     } catch (error) {
