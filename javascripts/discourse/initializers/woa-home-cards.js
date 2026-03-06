@@ -28,9 +28,17 @@ export default apiInitializer("0.11.1", (api) => {
       const response = await ajax(`/tag/${encodeURIComponent(tag)}.json?order=created&ascending=false`);
       const topics = response?.topic_list?.topics || [];
       topics.slice(0, limit).forEach((topic) => {
+        const topicUrl =
+          topic?.relative_url ||
+          topic?.url ||
+          (topic?.slug && topic?.id ? `/t/${topic.slug}/${topic.id}` : topic?.id ? `/t/${topic.id}` : null);
+        if (!topicUrl) {
+          return;
+        }
+
         const link = document.createElement("a");
         link.className = "woa-home-announcement";
-        link.href = topic.relative_url;
+        link.href = topicUrl;
 
         const title = document.createElement("div");
         title.className = "woa-home-announcement__title";
