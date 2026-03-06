@@ -91,7 +91,7 @@ body:not(.navigation-categories) #woa-home-announcements {
 
 .woa-home-announcement__title {
   display: block;
-  font-size: 0.93rem;
+  font-size: 1.05rem;
   line-height: 1.25;
   font-family: "Space Mono", "Share Tech Mono", "Courier New", monospace;
   letter-spacing: 0.03em;
@@ -99,7 +99,7 @@ body:not(.navigation-categories) #woa-home-announcements {
 
 .woa-home-announcement__meta {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   color: #9aa2b3;
   white-space: nowrap;
   font-family: "Space Mono", "Share Tech Mono", "Courier New", monospace;
@@ -130,90 +130,22 @@ body:not(.navigation-categories) #woa-home-announcements {
 .woa-splitflap {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 1px;
   align-items: center;
+  text-transform: uppercase;
 }
 
-.woa-splitflap__char {
-  position: relative;
-  display: inline-block;
-  width: 0.78ch;
-  height: 1.2em;
-  perspective: 600px;
-  transform-style: preserve-3d;
-  color: inherit;
-  font-size: inherit;
-  line-height: 1;
-}
-
-.woa-splitflap__top,
-.woa-splitflap__bottom,
-.woa-splitflap__flip {
-  position: absolute;
-  left: 0;
-  right: 0;
-  display: flex;
+.woa-splitflap__cell {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 12, 20, 0.7);
-  border: 1px solid rgba(80, 250, 123, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backface-visibility: hidden;
-  overflow: hidden;
-}
-
-.woa-splitflap__top::after,
-.woa-splitflap__bottom::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.woa-splitflap__top::after {
-  bottom: 0;
-}
-
-.woa-splitflap__bottom::after {
-  top: 0;
-}
-
-.woa-splitflap__top {
-  top: 0;
-  height: 50%;
-  border-bottom: none;
-  border-radius: 3px 3px 0 0;
-}
-
-.woa-splitflap__bottom {
-  bottom: 0;
-  height: 50%;
-  border-top: none;
-  border-radius: 0 0 3px 3px;
-}
-
-.woa-splitflap__flip {
-  top: 0;
-  height: 50%;
-  transform-origin: bottom;
-  border-bottom: none;
-  border-radius: 3px 3px 0 0;
-  z-index: 3;
-}
-
-.woa-splitflap__char.is-flipping .woa-splitflap__flip {
-  animation: woaSplitFlip 0.32s ease-in;
-}
-
-@keyframes woaSplitFlip {
-  0% {
-    transform: rotateX(0deg);
-  }
-  100% {
-    transform: rotateX(-90deg);
-  }
+  min-width: 0.72ch;
+  height: 1.3em;
+  padding: 0 0.12em;
+  border-radius: 2px;
+  background: #090909;
+  color: #f8f8f2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
 }
 
 body.navigation-categories .latest-topic-list,

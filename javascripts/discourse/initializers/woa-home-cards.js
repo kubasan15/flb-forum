@@ -2,111 +2,116 @@ import { apiInitializer } from "discourse/lib/api";
 import { ajax } from "discourse/lib/ajax";
 
 export default apiInitializer("0.11.1", (api) => {
-  const FLIP_ALPHABET = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-/:_";
   const DEFAULT_ROTATE_INTERVAL = 6500;
-  const FLIP_DURATION = 320;
-  let rotationTimer = null;
+  const DEFAULT_TICK_TIMEOUT = 60;
+  const DEFAULT_JUMP_ITERATIONS = 4;
+  let splitflapStops = [];
 
-  const ensureSplitflapChars = (container, length) => {
-    while (container.children.length < length) {
-      const char = document.createElement("span");
-      char.className = "woa-splitflap__char";
-      const top = document.createElement("span");
-      top.className = "woa-splitflap__top";
-      const bottom = document.createElement("span");
-      bottom.className = "woa-splitflap__bottom";
-      const flip = document.createElement("span");
-      flip.className = "woa-splitflap__flip";
-      char.appendChild(top);
-      char.appendChild(bottom);
-      char.appendChild(flip);
-      container.appendChild(char);
-    }
-    while (container.children.length > length) {
-      container.removeChild(container.lastChild);
-    }
+  const stopSplitflaps = () => {
+    splitflapStops.forEach((stop) => stop());
+    splitflapStops = [];
   };
 
-  const setSplitflapChar = (charEl, value) => {
-    const top = charEl.querySelector(".woa-splitflap__top");
-    const bottom = charEl.querySelector(".woa-splitflap__bottom");
-    if (top) {
-      top.textContent = value;
-    }
-    if (bottom) {
-      bottom.textContent = value;
-    }
-    charEl.setAttribute("data-current", value);
-  };
-
-  const setSplitflapText = (container, text) => {
-    const normalized = text || "";
-    ensureSplitflapChars(container, normalized.length);
-    Array.from(normalized).forEach((char, index) => {
-      const charEl = container.children[index];
-      setSplitflapChar(charEl, char);
+  const renderSplitflapText = (container, text) => {
+    const normalized = (text || "").toUpperCase();
+    container.innerHTML = "";
+    Array.from(normalized).forEach((char) => {
+      const cell = document.createElement("span");
+      cell.className = "woa-splitflap__cell";
+      cell.textContent = char || " ";
+      container.appendChild(cell);
     });
     container.setAttribute("data-current", normalized);
   };
 
-  const buildFlipSteps = (fromChar, toChar) => {
-    if (fromChar === toChar) {
-      return [toChar];
+  const startSplitflap = (container, texts, options = {}, onChange) => {
+    const normalizedTexts = (texts || [])
+      .map((text) => (text || "").toUpperCase())
+      .filter((text) => text.length > 0);
+    if (!normalizedTexts.length) {
+      return () => {};
     }
-    const fromIndex = FLIP_ALPHABET.indexOf(fromChar);
-    const toIndex = FLIP_ALPHABET.indexOf(toChar);
-    if (fromIndex === -1 || toIndex === -1) {
-      return [toChar];
+
+    const timeOut = Number(options.timeOut ?? DEFAULT_ROTATE_INTERVAL);
+    const tickTimeOut = Number(options.tickTimeOut ?? DEFAULT_TICK_TIMEOUT);
+    const nbJumpIterations = Number(options.nbJumpIterations ?? DEFAULT_JUMP_ITERATIONS);
+    let curIndex = 0;
+    let curText = normalizedTexts[0];
+    let targetText = normalizedTexts[0];
+    let timerId = null;
+    let stopped = false;
+    let jumpCount = 0;
+
+    const schedule = (fn, delay) => {
+      timerId = window.setTimeout(fn, delay);
+    };
+
+    const updateDisplay = (text) => {
+      renderSplitflapText(container, text);
+      curText = text;
+    };
+
+    const changeText = () => {
+      if (stopped) {
+        return;
+      }
+      const nextIndex = (curIndex + 1) % normalizedTexts.length;
+      targetText = normalizedTexts[nextIndex];
+      curIndex = nextIndex;
+      if (onChange) {
+        onChange(curIndex);
+      }
+      transitionTick();
+    };
+
+    const transitionTick = () => {
+      if (stopped) {
+        return;
+      }
+      const maxLength = Math.max(curText.length, targetText.length);
+      const current = curText.padEnd(maxLength, " ").split("");
+      const target = targetText.padEnd(maxLength, " ");
+      let done = true;
+
+      for (let i = 0; i < maxLength; i += 1) {
+        if (current[i] !== target[i]) {
+          done = false;
+          let code = current[i].charCodeAt(0);
+          if (Number.isNaN(code) || code < 32 || code > 126) {
+            code = 32;
+          }
+          if (jumpCount >= nbJumpIterations) {
+            code += 1;
+            if (code > 126) {
+              code = 32;
+            }
+            current[i] = String.fromCharCode(code);
+          }
+        }
+      }
+
+      jumpCount = (jumpCount + 1) % (nbJumpIterations + 1);
+      updateDisplay(current.join(""));
+
+      if (!done) {
+        schedule(transitionTick, tickTimeOut);
+      } else {
+        schedule(changeText, timeOut);
+      }
+    };
+
+    updateDisplay(curText);
+    if (onChange) {
+      onChange(curIndex);
     }
-    const steps = [];
-    let index = fromIndex;
-    while (index !== toIndex) {
-      index = (index + 1) % FLIP_ALPHABET.length;
-      steps.push(FLIP_ALPHABET[index]);
-    }
-    return steps.length ? steps : [toChar];
-  };
+    schedule(changeText, timeOut);
 
-  const animateSplitflapText = (container, nextText) => {
-    const currentText = container.getAttribute("data-current") || "";
-    const targetText = nextText || "";
-    const maxLength = Math.max(currentText.length, targetText.length);
-    const paddedCurrent = currentText.padEnd(maxLength, " ");
-    const paddedTarget = targetText.padEnd(maxLength, " ");
-
-    ensureSplitflapChars(container, maxLength);
-    Array.from(paddedTarget).forEach((targetChar, index) => {
-      const charEl = container.children[index];
-      const steps = buildFlipSteps(paddedCurrent[index], targetChar);
-      steps.forEach((stepChar, stepIndex) => {
-        const delay = index * 28 + stepIndex * FLIP_DURATION;
-        window.setTimeout(() => {
-          const currentChar = charEl.getAttribute("data-current") || " ";
-          const top = charEl.querySelector(".woa-splitflap__top");
-          const bottom = charEl.querySelector(".woa-splitflap__bottom");
-          const flip = charEl.querySelector(".woa-splitflap__flip");
-          if (top) {
-            top.textContent = currentChar;
-          }
-          if (bottom) {
-            bottom.textContent = stepChar;
-          }
-          if (flip) {
-            flip.textContent = currentChar;
-          }
-
-          charEl.classList.remove("is-flipping");
-          void charEl.offsetHeight;
-          charEl.classList.add("is-flipping");
-
-          window.setTimeout(() => {
-            setSplitflapChar(charEl, stepChar);
-          }, FLIP_DURATION * 0.55);
-        }, delay);
-      });
-    });
-
-    container.setAttribute("data-current", targetText);
+    return () => {
+      stopped = true;
+      if (timerId) {
+        window.clearTimeout(timerId);
+      }
+    };
   };
 
   const applyCardAttributes = () => {
@@ -119,10 +124,7 @@ export default apiInitializer("0.11.1", (api) => {
   const renderAnnouncements = async () => {
     const container = document.querySelector("[data-woa-announcements]");
     if (!container) {
-      if (rotationTimer) {
-        window.clearInterval(rotationTimer);
-        rotationTimer = null;
-      }
+      stopSplitflaps();
       return;
     }
 
@@ -135,10 +137,7 @@ export default apiInitializer("0.11.1", (api) => {
     const limit = Number(container.getAttribute("data-limit") || 5);
     const rotateInterval = Number(container.getAttribute("data-rotate-interval") || DEFAULT_ROTATE_INTERVAL);
     list.innerHTML = "";
-    if (rotationTimer) {
-      window.clearInterval(rotationTimer);
-      rotationTimer = null;
-    }
+    stopSplitflaps();
 
     try {
       const response = await ajax(`/tag/${encodeURIComponent(tag)}.json?order=created&ascending=false`);
@@ -147,7 +146,6 @@ export default apiInitializer("0.11.1", (api) => {
         return;
       }
 
-      let rotationIndex = 0;
       const link = document.createElement("a");
       link.className = "woa-home-announcement";
 
@@ -167,42 +165,48 @@ export default apiInitializer("0.11.1", (api) => {
       link.appendChild(metaLine);
       list.appendChild(link);
 
-      const updateAnnouncement = (topic, animate) => {
+      const getTopicUrl = (topic) => {
         const fallbackUrl =
           topic?.slug && topic?.id ? `/t/${topic.slug}/${topic.id}` : topic?.id ? `/t/${topic.id}` : null;
         const rawUrl = topic?.relative_url || topic?.url || fallbackUrl;
-        const topicUrl = rawUrl === "undefined" ? fallbackUrl : rawUrl;
-        if (!topicUrl) {
-          return;
-        }
+        return rawUrl === "undefined" ? fallbackUrl : rawUrl;
+      };
 
-        link.href = topicUrl;
-        const titleText = topic?.title || "";
-        let metaText = "";
-        if (topic.category_id && response?.category_list?.categories) {
+      const titleTexts = topics.map((topic) => topic?.title || "");
+      const metaTexts = topics.map((topic) => {
+        if (topic?.category_id && response?.category_list?.categories) {
           const category = response.category_list.categories.find((item) => item.id === topic.category_id);
           if (category) {
-            metaText = category.name || "";
+            return category.name || "";
           }
         }
+        return "";
+      });
 
-        if (animate) {
-          animateSplitflapText(title, titleText);
-          animateSplitflapText(meta, metaText);
-        } else {
-          setSplitflapText(title, titleText);
-          setSplitflapText(meta, metaText);
+      const updateLink = (index) => {
+        const topic = topics[index];
+        const url = getTopicUrl(topic);
+        if (url) {
+          link.href = url;
         }
       };
 
-      updateAnnouncement(topics[rotationIndex], false);
+      splitflapStops.push(
+        startSplitflap(
+          title,
+          titleTexts,
+          { timeOut: rotateInterval, tickTimeOut: DEFAULT_TICK_TIMEOUT, nbJumpIterations: DEFAULT_JUMP_ITERATIONS },
+          updateLink
+        )
+      );
 
-      if (topics.length > 1 && rotateInterval > 0) {
-        rotationTimer = window.setInterval(() => {
-          rotationIndex = (rotationIndex + 1) % topics.length;
-          updateAnnouncement(topics[rotationIndex], true);
-        }, rotateInterval);
-      }
+      splitflapStops.push(
+        startSplitflap(meta, metaTexts, {
+          timeOut: rotateInterval,
+          tickTimeOut: DEFAULT_TICK_TIMEOUT,
+          nbJumpIterations: DEFAULT_JUMP_ITERATIONS,
+        })
+      );
     } catch (error) {
       const fallback = document.createElement("div");
       fallback.className = "woa-home-announcement__meta";
