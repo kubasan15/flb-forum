@@ -128,20 +128,22 @@ body:not(.navigation-categories) #woa-home-announcements {
 }
 
 .woa-splitflap {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 1px;
+  display: grid;
+  grid-template-columns: repeat(var(--cell-count, 1), var(--cell-width, 1.05rem));
+  gap: 2px;
   align-items: center;
   text-transform: uppercase;
+  width: 100%;
+  min-height: 1.4em;
 }
 
 .woa-splitflap__cell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 0.72ch;
-  height: 1.3em;
-  padding: 0 0.12em;
+  width: var(--cell-width, 1.05rem);
+  height: 1.35em;
+  padding: 0;
   border-radius: 2px;
   background: #090909;
   color: #f8f8f2;

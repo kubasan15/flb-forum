@@ -16,6 +16,7 @@ export default apiInitializer("0.11.1", (api) => {
     const normalized = (text || "").toUpperCase();
     const length = typeof lengthOverride === "number" ? lengthOverride : normalized.length;
     const padded = normalized.padEnd(length, " ");
+    container.style.setProperty("--cell-count", String(length));
     container.innerHTML = "";
     Array.from(padded).forEach((char) => {
       const cell = document.createElement("span");
