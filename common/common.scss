@@ -9,7 +9,7 @@ body:not(.navigation-categories) #woa-home-games {
 
 .woa-home-games__inner {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -60,7 +60,7 @@ body:not(.navigation-categories) #woa-home-games {
   font-size: 0.88rem;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -94,6 +94,10 @@ body:not(.navigation-categories) #woa-home-games {
 }
 
 @media (max-width: 720px) {
+  .woa-home-games__inner {
+    grid-template-columns: 1fr;
+  }
+
   .woa-game-card {
     min-height: 110px;
   }

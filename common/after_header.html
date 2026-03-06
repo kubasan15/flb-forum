@@ -49,36 +49,3 @@
     </article>
   </div>
 </section>
-
-<script>
-  (function () {
-    var cards = document.querySelectorAll("[data-woa-card]");
-    cards.forEach(function (card) {
-      card.setAttribute("tabindex", "0");
-      card.setAttribute("role", "link");
-
-      card.addEventListener("click", function (event) {
-        if (event.target.closest("a")) {
-          return;
-        }
-        var href = card.getAttribute("data-href");
-        if (href && href !== "#") {
-          window.location.href = href;
-        }
-      });
-
-      card.addEventListener("keydown", function (event) {
-        if (event.target.closest("a")) {
-          return;
-        }
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          var href = card.getAttribute("data-href");
-          if (href && href !== "#") {
-            window.location.href = href;
-          }
-        }
-      });
-    });
-  })();
-</script>
